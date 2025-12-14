@@ -41,7 +41,7 @@ func main() {
 	ctx := context.Background()
 
 	// Demonstrate all features
-	fmt.Println("=== OpenRouter Provider Examples ===\n")
+	fmt.Println("=== OpenRouter Provider Examples ===")
 
 	// 1. Basic Chat Completion
 	fmt.Println("1. Basic Chat Completion (OpenAI GPT-4o)")

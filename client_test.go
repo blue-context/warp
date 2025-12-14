@@ -42,6 +42,7 @@ type mockProvider struct {
 	rerankReq            *RerankRequest
 	rerankCtx            context.Context
 	capabilities         Capabilities
+	modelInfo            map[string]*types.ModelInfo
 }
 
 func (m *mockProvider) Name() string {
@@ -118,7 +119,17 @@ func (m *mockProvider) Rerank(ctx context.Context, req *RerankRequest) (*RerankR
 }
 
 func (m *mockProvider) GetModelInfo(model string) *types.ModelInfo {
-	return nil
+	if m.modelInfo != nil {
+		return m.modelInfo[model]
+	}
+	// Return default pricing for common models
+	return &types.ModelInfo{
+		Name:             model,
+		ContextWindow:    8192,
+		InputCostPer1M:   10.0,
+		OutputCostPer1M:  30.0,
+		Capabilities:     types.Capabilities{Completion: true},
+	}
 }
 
 func (m *mockProvider) ListModels() []*types.ModelInfo {
@@ -126,13 +137,69 @@ func (m *mockProvider) ListModels() []*types.ModelInfo {
 }
 
 func (m *mockProvider) Supports() interface{} {
-	// Return capabilities if set
+	// Return capabilities if set (convert to anonymous struct for type assertion compatibility)
 	if m.capabilities.Completion || m.capabilities.Streaming || m.capabilities.Embedding || m.capabilities.Rerank {
-		return m.capabilities
+		return struct {
+			Completion      bool
+			Streaming       bool
+			Embedding       bool
+			ImageGeneration bool
+			ImageEdit       bool
+			ImageVariation  bool
+			Transcription   bool
+			Speech          bool
+			Moderation      bool
+			FunctionCalling bool
+			Vision          bool
+			JSON            bool
+			Rerank          bool
+		}{
+			Completion:      m.capabilities.Completion,
+			Streaming:       m.capabilities.Streaming,
+			Embedding:       m.capabilities.Embedding,
+			ImageGeneration: m.capabilities.ImageGeneration,
+			ImageEdit:       m.capabilities.ImageEdit,
+			ImageVariation:  m.capabilities.ImageVariation,
+			Transcription:   m.capabilities.Transcription,
+			Speech:          m.capabilities.Speech,
+			Moderation:      m.capabilities.Moderation,
+			FunctionCalling: m.capabilities.FunctionCalling,
+			Vision:          m.capabilities.Vision,
+			JSON:            m.capabilities.JSON,
+			Rerank:          m.capabilities.Rerank,
+		}
 	}
-	// Return supports if set
+	// Return supports if set (convert to anonymous struct)
 	if m.supports.Completion || m.supports.Streaming || m.supports.Embedding {
-		return m.supports
+		return struct {
+			Completion      bool
+			Streaming       bool
+			Embedding       bool
+			ImageGeneration bool
+			ImageEdit       bool
+			ImageVariation  bool
+			Transcription   bool
+			Speech          bool
+			Moderation      bool
+			FunctionCalling bool
+			Vision          bool
+			JSON            bool
+			Rerank          bool
+		}{
+			Completion:      m.supports.Completion,
+			Streaming:       m.supports.Streaming,
+			Embedding:       m.supports.Embedding,
+			ImageGeneration: m.supports.ImageGeneration,
+			ImageEdit:       m.supports.ImageEdit,
+			ImageVariation:  m.supports.ImageVariation,
+			Transcription:   m.supports.Transcription,
+			Speech:          m.supports.Speech,
+			Moderation:      m.supports.Moderation,
+			FunctionCalling: m.supports.FunctionCalling,
+			Vision:          m.supports.Vision,
+			JSON:            m.supports.JSON,
+			Rerank:          m.supports.Rerank,
+		}
 	}
 	// Default capabilities
 	return struct {
@@ -912,6 +979,14 @@ func TestCompletionCost(t *testing.T) {
 	}
 	defer client.Close()
 
+	// Register mock provider
+	mock := &mockProvider{
+		name: "test",
+	}
+	if err := client.RegisterProvider(mock); err != nil {
+		t.Fatalf("failed to register mock provider: %v", err)
+	}
+
 	tests := []struct {
 		name    string
 		resp    *CompletionResponse
@@ -922,7 +997,7 @@ func TestCompletionCost(t *testing.T) {
 			name: "with usage",
 			resp: &CompletionResponse{
 				ID:      "test-123",
-				Model:   "openai/gpt-4",
+				Model:   "test/gpt-4",
 				Choices: []Choice{{Index: 0, Message: Message{Role: "assistant", Content: "Test"}, FinishReason: "stop"}},
 				Usage:   &Usage{PromptTokens: 10, CompletionTokens: 5, TotalTokens: 15},
 			},
@@ -938,6 +1013,7 @@ func TestCompletionCost(t *testing.T) {
 			name: "no usage",
 			resp: &CompletionResponse{
 				ID:      "test-123",
+				Model:   "test/gpt-4",
 				Choices: []Choice{{Index: 0, Message: Message{Role: "assistant", Content: "Test"}, FinishReason: "stop"}},
 			},
 			wantErr: true,
@@ -1004,14 +1080,14 @@ func TestCostTracking(t *testing.T) {
 		{
 			name:      "cost tracking enabled",
 			trackCost: true,
-			model:     "openai/gpt-4",
+			model:     "test/gpt-4",
 			usage:     &Usage{PromptTokens: 1000, CompletionTokens: 500},
 			wantCost:  true,
 		},
 		{
 			name:      "cost tracking disabled",
 			trackCost: false,
-			model:     "openai/gpt-4",
+			model:     "test/gpt-4",
 			usage:     &Usage{PromptTokens: 1000, CompletionTokens: 500},
 			wantCost:  true, // Cost calculator is lazily initialized
 		},
@@ -1030,6 +1106,14 @@ func TestCostTracking(t *testing.T) {
 				t.Fatalf("NewClient() error = %v", err)
 			}
 			defer client.Close()
+
+			// Register mock provider with pricing
+			mock := &mockProvider{
+				name: "test",
+			}
+			if err := client.RegisterProvider(mock); err != nil {
+				t.Fatalf("failed to register mock provider: %v", err)
+			}
 
 			// Create response
 			resp := &CompletionResponse{
@@ -1059,6 +1143,37 @@ func TestCostTrackingWithRealPricing(t *testing.T) {
 	}
 	defer client.Close()
 
+	// Register mock provider with custom pricing for different models
+	mock := &mockProvider{
+		name: "test",
+		modelInfo: map[string]*types.ModelInfo{
+			"gpt-4": {
+				Name:             "gpt-4",
+				ContextWindow:    8192,
+				InputCostPer1M:   30.0,
+				OutputCostPer1M:  60.0,
+				Capabilities:     types.Capabilities{Completion: true},
+			},
+			"gpt-3.5-turbo": {
+				Name:             "gpt-3.5-turbo",
+				ContextWindow:    4096,
+				InputCostPer1M:   0.5,
+				OutputCostPer1M:  1.5,
+				Capabilities:     types.Capabilities{Completion: true},
+			},
+			"claude-3-opus-20240229": {
+				Name:             "claude-3-opus-20240229",
+				ContextWindow:    200000,
+				InputCostPer1M:   15.0,
+				OutputCostPer1M:  75.0,
+				Capabilities:     types.Capabilities{Completion: true},
+			},
+		},
+	}
+	if err := client.RegisterProvider(mock); err != nil {
+		t.Fatalf("failed to register mock provider: %v", err)
+	}
+
 	tests := []struct {
 		name         string
 		model        string
@@ -1069,7 +1184,7 @@ func TestCostTrackingWithRealPricing(t *testing.T) {
 	}{
 		{
 			name:         "gpt-4 small request",
-			model:        "openai/gpt-4",
+			model:        "test/gpt-4",
 			promptTokens: 1000,
 			compTokens:   500,
 			minCost:      0.05, // Reasonable lower bound
@@ -1077,7 +1192,7 @@ func TestCostTrackingWithRealPricing(t *testing.T) {
 		},
 		{
 			name:         "gpt-3.5-turbo request",
-			model:        "openai/gpt-3.5-turbo",
+			model:        "test/gpt-3.5-turbo",
 			promptTokens: 2000,
 			compTokens:   1000,
 			minCost:      0.002,
@@ -1085,7 +1200,7 @@ func TestCostTrackingWithRealPricing(t *testing.T) {
 		},
 		{
 			name:         "claude-3-opus request",
-			model:        "anthropic/claude-3-opus-20240229",
+			model:        "test/claude-3-opus-20240229",
 			promptTokens: 1000,
 			compTokens:   500,
 			minCost:      0.05,
@@ -1194,9 +1309,17 @@ func TestClientWithCostTrackingInitialization(t *testing.T) {
 			}
 			defer client.Close()
 
+			// Register mock provider
+			mock := &mockProvider{
+				name: "test",
+			}
+			if err := client.RegisterProvider(mock); err != nil {
+				t.Fatalf("failed to register mock provider: %v", err)
+			}
+
 			// Test that cost calculation works (or doesn't)
 			resp := &CompletionResponse{
-				Model: "openai/gpt-4",
+				Model: "test/gpt-4",
 				Usage: &Usage{
 					PromptTokens:     1000,
 					CompletionTokens: 500,
