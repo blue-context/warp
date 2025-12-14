@@ -121,7 +121,7 @@ func functionCallingExample(ctx context.Context, provider *vllmsemanticrouter.Pr
 		Tools: []warp.Tool{
 			{
 				Type: "function",
-				Function: warp.FunctionDefinition{
+				Function: warp.Function{
 					Name:        "get_weather",
 					Description: "Get the current weather for a location",
 					Parameters: map[string]interface{}{
@@ -141,7 +141,7 @@ func functionCallingExample(ctx context.Context, provider *vllmsemanticrouter.Pr
 				},
 			},
 		},
-		ToolChoice: "auto",
+		ToolChoice: &warp.ToolChoice{Type: "auto"},
 	})
 	if err != nil {
 		log.Printf("Error: %v\n", err)
