@@ -9,7 +9,7 @@ import (
 // TestStubMethodsReturnWarpError verifies that unsupported methods return proper WarpError.
 func TestStubMethodsReturnWarpError(t *testing.T) {
 	// Create provider with test configuration
-	opts := getTestOptions()
+	opts := getTestOptions(t)
 	p, err := NewProvider(opts...)
 	if err != nil {
 		t.Fatalf("NewProvider() error = %v", err)

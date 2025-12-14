@@ -285,5 +285,8 @@ func (p *Provider) buildEndpoint(model string, stream bool) string {
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) Rerank(ctx context.Context, req *warp.RerankRequest) (*warp.RerankResponse, error) {
-	return nil, fmt.Errorf("rerank not supported by vertex provider")
+	return nil, &warp.WarpError{
+		Message:  "rerank is not supported by Vertex",
+		Provider: "vertex",
+	}
 }
