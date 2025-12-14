@@ -42,7 +42,7 @@ func TestCompletionStream(t *testing.T) {
 		{
 			name: "empty model",
 			req: &warp.CompletionRequest{
-				Model:  "",
+				Model: "",
 			},
 			wantErr: true,
 			errMsg:  "model is required",
@@ -50,7 +50,7 @@ func TestCompletionStream(t *testing.T) {
 		{
 			name: "invalid model",
 			req: &warp.CompletionRequest{
-				Model:  "invalid-model",
+				Model: "invalid-model",
 			},
 			wantErr: true,
 		},

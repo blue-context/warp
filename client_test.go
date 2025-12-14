@@ -124,11 +124,11 @@ func (m *mockProvider) GetModelInfo(model string) *types.ModelInfo {
 	}
 	// Return default pricing for common models
 	return &types.ModelInfo{
-		Name:             model,
-		ContextWindow:    8192,
-		InputCostPer1M:   10.0,
-		OutputCostPer1M:  30.0,
-		Capabilities:     types.Capabilities{Completion: true},
+		Name:            model,
+		ContextWindow:   8192,
+		InputCostPer1M:  10.0,
+		OutputCostPer1M: 30.0,
+		Capabilities:    types.Capabilities{Completion: true},
 	}
 }
 
@@ -1148,25 +1148,25 @@ func TestCostTrackingWithRealPricing(t *testing.T) {
 		name: "test",
 		modelInfo: map[string]*types.ModelInfo{
 			"gpt-4": {
-				Name:             "gpt-4",
-				ContextWindow:    8192,
-				InputCostPer1M:   30.0,
-				OutputCostPer1M:  60.0,
-				Capabilities:     types.Capabilities{Completion: true},
+				Name:            "gpt-4",
+				ContextWindow:   8192,
+				InputCostPer1M:  30.0,
+				OutputCostPer1M: 60.0,
+				Capabilities:    types.Capabilities{Completion: true},
 			},
 			"gpt-3.5-turbo": {
-				Name:             "gpt-3.5-turbo",
-				ContextWindow:    4096,
-				InputCostPer1M:   0.5,
-				OutputCostPer1M:  1.5,
-				Capabilities:     types.Capabilities{Completion: true},
+				Name:            "gpt-3.5-turbo",
+				ContextWindow:   4096,
+				InputCostPer1M:  0.5,
+				OutputCostPer1M: 1.5,
+				Capabilities:    types.Capabilities{Completion: true},
 			},
 			"claude-3-opus-20240229": {
-				Name:             "claude-3-opus-20240229",
-				ContextWindow:    200000,
-				InputCostPer1M:   15.0,
-				OutputCostPer1M:  75.0,
-				Capabilities:     types.Capabilities{Completion: true},
+				Name:            "claude-3-opus-20240229",
+				ContextWindow:   200000,
+				InputCostPer1M:  15.0,
+				OutputCostPer1M: 75.0,
+				Capabilities:    types.Capabilities{Completion: true},
 			},
 		},
 	}

@@ -294,4 +294,3 @@ func TestRerankContext(t *testing.T) {
 		t.Errorf("Context model is empty")
 	}
 }
-

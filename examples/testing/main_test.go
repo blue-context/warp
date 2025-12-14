@@ -190,7 +190,7 @@ func TestStreamingCompletion(t *testing.T) {
 
 	// Make streaming request
 	req := &warp.CompletionRequest{
-		Model:  "mock/test-model",
+		Model: "mock/test-model",
 		Messages: []warp.Message{
 			{Role: "user", Content: "Say hello"},
 		},

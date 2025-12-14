@@ -32,7 +32,7 @@ func main() {
 	provider, err := openrouter.NewProvider(
 		openrouter.WithAPIKey(apiKey),
 		openrouter.WithHTTPReferer("https://github.com/blue-context/warp"), // Optional but recommended
-		openrouter.WithAppTitle("Warp Go SDK Example"),                        // Optional but recommended
+		openrouter.WithAppTitle("Warp Go SDK Example"),                     // Optional but recommended
 	)
 	if err != nil {
 		log.Fatalf("Failed to create provider: %v", err)

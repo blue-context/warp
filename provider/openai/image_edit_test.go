@@ -324,14 +324,14 @@ func TestProvider_ImageEdit(t *testing.T) {
 
 func TestCreateImageEditForm(t *testing.T) {
 	tests := []struct {
-		name            string
-		req             *warp.ImageEditRequest
-		fields          map[string]string
-		wantErr         bool
-		errString       string
-		checkImageFile  bool
-		checkMaskFile   bool
-		checkFields     []string
+		name           string
+		req            *warp.ImageEditRequest
+		fields         map[string]string
+		wantErr        bool
+		errString      string
+		checkImageFile bool
+		checkMaskFile  bool
+		checkFields    []string
 	}{
 		{
 			name: "form with image only",

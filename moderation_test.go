@@ -11,9 +11,9 @@ import (
 
 // mockModerationProvider is a test provider that implements moderation.
 type mockModerationProvider struct {
-	name           string
-	moderationResp *ModerationResponse
-	moderationErr  error
+	name               string
+	moderationResp     *ModerationResponse
+	moderationErr      error
 	supportsModeration bool
 }
 
@@ -92,13 +92,13 @@ func (m *mockModerationProvider) Supports() interface{} {
 
 func TestModeration(t *testing.T) {
 	tests := []struct {
-		name           string
-		request        *ModerationRequest
-		mockResp       *ModerationResponse
-		mockErr        error
+		name               string
+		request            *ModerationRequest
+		mockResp           *ModerationResponse
+		mockErr            error
 		supportsModeration bool
-		wantErr        bool
-		wantErrMsg     string
+		wantErr            bool
+		wantErrMsg         string
 	}{
 		{
 			name: "successful single text moderation",
@@ -130,7 +130,7 @@ func TestModeration(t *testing.T) {
 				},
 			},
 			supportsModeration: true,
-			wantErr:        false,
+			wantErr:            false,
 		},
 		{
 			name: "successful flagged content",
@@ -154,7 +154,7 @@ func TestModeration(t *testing.T) {
 				},
 			},
 			supportsModeration: true,
-			wantErr:        false,
+			wantErr:            false,
 		},
 		{
 			name: "successful array input",
@@ -167,19 +167,19 @@ func TestModeration(t *testing.T) {
 				Model: "text-moderation-latest",
 				Results: []ModerationResult{
 					{
-						Flagged: false,
-						Categories: ModerationCategories{},
+						Flagged:        false,
+						Categories:     ModerationCategories{},
 						CategoryScores: ModerationCategoryScores{},
 					},
 					{
-						Flagged: false,
-						Categories: ModerationCategories{},
+						Flagged:        false,
+						Categories:     ModerationCategories{},
 						CategoryScores: ModerationCategoryScores{},
 					},
 				},
 			},
 			supportsModeration: true,
-			wantErr:        false,
+			wantErr:            false,
 		},
 		{
 			name: "default model",
@@ -193,12 +193,12 @@ func TestModeration(t *testing.T) {
 				Results: []ModerationResult{{Flagged: false}},
 			},
 			supportsModeration: true,
-			wantErr:        false,
+			wantErr:            false,
 		},
 		{
-			name: "nil request",
-			request: nil,
-			wantErr: true,
+			name:       "nil request",
+			request:    nil,
+			wantErr:    true,
 			wantErrMsg: "request cannot be nil",
 		},
 		{
@@ -207,7 +207,7 @@ func TestModeration(t *testing.T) {
 				Model: "test/text-moderation-latest",
 				Input: nil,
 			},
-			wantErr: true,
+			wantErr:    true,
 			wantErrMsg: "input is required",
 		},
 		{
@@ -216,7 +216,7 @@ func TestModeration(t *testing.T) {
 				Model: "nonexistent/model",
 				Input: "Test",
 			},
-			wantErr: true,
+			wantErr:    true,
 			wantErrMsg: "provider \"nonexistent\" not found (did you register it?)",
 		},
 		{
@@ -226,8 +226,8 @@ func TestModeration(t *testing.T) {
 				Input: "Test",
 			},
 			supportsModeration: false,
-			wantErr:        true,
-			wantErrMsg:     "provider \"test\" does not support moderation",
+			wantErr:            true,
+			wantErrMsg:         "provider \"test\" does not support moderation",
 		},
 		{
 			name: "provider error",
@@ -237,8 +237,8 @@ func TestModeration(t *testing.T) {
 			},
 			mockErr:            errors.New("API error"),
 			supportsModeration: true,
-			wantErr:        true,
-			wantErrMsg:     "API error",
+			wantErr:            true,
+			wantErrMsg:         "API error",
 		},
 	}
 

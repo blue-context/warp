@@ -9,34 +9,34 @@ import (
 
 func TestErrorHierarchy(t *testing.T) {
 	tests := []struct {
-		name      string
-		err       error
-		wantType  string
-		isWarp bool
+		name     string
+		err      error
+		wantType string
+		isWarp   bool
 	}{
 		{
-			name:      "APIError is WarpError",
-			err:       NewAPIError("test error", 500, "openai", nil),
-			wantType:  "*warp.APIError",
-			isWarp: true,
+			name:     "APIError is WarpError",
+			err:      NewAPIError("test error", 500, "openai", nil),
+			wantType: "*warp.APIError",
+			isWarp:   true,
 		},
 		{
-			name:      "AuthenticationError is WarpError",
-			err:       NewAuthenticationError("invalid key", "openai", nil),
-			wantType:  "*warp.AuthenticationError",
-			isWarp: true,
+			name:     "AuthenticationError is WarpError",
+			err:      NewAuthenticationError("invalid key", "openai", nil),
+			wantType: "*warp.AuthenticationError",
+			isWarp:   true,
 		},
 		{
-			name:      "RateLimitError is WarpError",
-			err:       NewRateLimitError("too many requests", "openai", 5*time.Second, nil),
-			wantType:  "*warp.RateLimitError",
-			isWarp: true,
+			name:     "RateLimitError is WarpError",
+			err:      NewRateLimitError("too many requests", "openai", 5*time.Second, nil),
+			wantType: "*warp.RateLimitError",
+			isWarp:   true,
 		},
 		{
-			name:      "TimeoutError is WarpError",
-			err:       NewTimeoutError("request timed out", "openai", nil),
-			wantType:  "*warp.TimeoutError",
-			isWarp: true,
+			name:     "TimeoutError is WarpError",
+			err:      NewTimeoutError("request timed out", "openai", nil),
+			wantType: "*warp.TimeoutError",
+			isWarp:   true,
 		},
 	}
 

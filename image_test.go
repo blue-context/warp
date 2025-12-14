@@ -17,11 +17,11 @@ import (
 
 // mockImageProvider is a mock provider that implements ImageGeneration, ImageEdit, and ImageVariation
 type mockImageProvider struct {
-	name              string
-	imageResp         *ImageGenerationResponse
-	imageErr          error
-	imageEditResp     *ImageGenerationResponse
-	imageEditErr      error
+	name               string
+	imageResp          *ImageGenerationResponse
+	imageErr           error
+	imageEditResp      *ImageGenerationResponse
+	imageEditErr       error
 	imageVariationResp *ImageGenerationResponse
 	imageVariationErr  error
 }
