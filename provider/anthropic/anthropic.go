@@ -23,6 +23,7 @@ package anthropic
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -189,4 +190,64 @@ func (p *Provider) Embedding(ctx context.Context, req *warp.EmbeddingRequest) (*
 // Returns an error indicating the feature is not supported.
 func (p *Provider) Rerank(ctx context.Context, req *warp.RerankRequest) (*warp.RerankResponse, error) {
 	return nil, fmt.Errorf("rerank not supported by anthropic provider")
+}
+
+// Moderation checks content for policy violations.
+//
+// Anthropic does not support content moderation.
+func (p *Provider) Moderation(ctx context.Context, req *warp.ModerationRequest) (*warp.ModerationResponse, error) {
+	return nil, &warp.WarpError{
+		Message:  "moderation is not supported by Anthropic",
+		Provider: "anthropic",
+	}
+}
+
+// Transcription transcribes audio to text.
+//
+// Anthropic does not support audio transcription.
+func (p *Provider) Transcription(ctx context.Context, req *warp.TranscriptionRequest) (*warp.TranscriptionResponse, error) {
+	return nil, &warp.WarpError{
+		Message:  "transcription is not supported by Anthropic",
+		Provider: "anthropic",
+	}
+}
+
+// Speech converts text to speech.
+//
+// Anthropic does not support text-to-speech.
+func (p *Provider) Speech(ctx context.Context, req *warp.SpeechRequest) (io.ReadCloser, error) {
+	return nil, &warp.WarpError{
+		Message:  "speech synthesis is not supported by Anthropic",
+		Provider: "anthropic",
+	}
+}
+
+// ImageGeneration generates images from text prompts.
+//
+// Anthropic does not support image generation.
+func (p *Provider) ImageGeneration(ctx context.Context, req *warp.ImageGenerationRequest) (*warp.ImageGenerationResponse, error) {
+	return nil, &warp.WarpError{
+		Message:  "image generation is not supported by Anthropic",
+		Provider: "anthropic",
+	}
+}
+
+// ImageEdit edits an image using AI based on a text prompt.
+//
+// Anthropic does not support image editing.
+func (p *Provider) ImageEdit(ctx context.Context, req *warp.ImageEditRequest) (*warp.ImageGenerationResponse, error) {
+	return nil, &warp.WarpError{
+		Message:  "image editing is not supported by Anthropic",
+		Provider: "anthropic",
+	}
+}
+
+// ImageVariation creates variations of an existing image.
+//
+// Anthropic does not support image variation.
+func (p *Provider) ImageVariation(ctx context.Context, req *warp.ImageVariationRequest) (*warp.ImageGenerationResponse, error) {
+	return nil, &warp.WarpError{
+		Message:  "image variation is not supported by Anthropic",
+		Provider: "anthropic",
+	}
 }
