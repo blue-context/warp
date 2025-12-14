@@ -71,3 +71,4 @@ temp/
 .claude
 CLAUDE.md
 workbench/
+/vllm-semantic-router
