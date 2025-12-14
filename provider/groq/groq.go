@@ -45,6 +45,9 @@ type Provider struct {
 	httpClient warp.HTTPClient
 }
 
+// Compile-time interface check
+var _ provider.Provider = (*Provider)(nil)
+
 // Option is a functional option for configuring the Groq provider.
 type Option func(*Provider)
 

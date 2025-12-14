@@ -25,7 +25,6 @@ package together
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -45,6 +44,9 @@ type Provider struct {
 	apiBase    string
 	httpClient warp.HTTPClient
 }
+
+// Compile-time interface check
+var _ provider.Provider = (*Provider)(nil)
 
 // Option is a functional option for configuring the Together AI provider.
 type Option func(*Provider)
@@ -165,7 +167,10 @@ func (p *Provider) Supports() interface{} {
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) Rerank(ctx context.Context, req *warp.RerankRequest) (*warp.RerankResponse, error) {
-	return nil, fmt.Errorf("rerank not supported by together provider")
+	return nil, &warp.WarpError{
+		Message:  "rerank is not supported by Together",
+		Provider: "together",
+	}
 }
 
 // Moderation checks content for policy violations.

@@ -29,6 +29,9 @@ type Provider struct {
 	signer          *Signer
 }
 
+// Compile-time interface check
+var _ provider.Provider = (*Provider)(nil)
+
 // Option is a functional option for configuring the Bedrock provider.
 type Option func(*Provider)
 
@@ -245,5 +248,8 @@ func (p *Provider) buildEndpoint(modelID string, stream bool) string {
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) Rerank(ctx context.Context, req *warp.RerankRequest) (*warp.RerankResponse, error) {
-	return nil, fmt.Errorf("rerank not supported by bedrock provider")
+	return nil, &warp.WarpError{
+		Message:  "rerank is not supported by Bedrock",
+		Provider: "bedrock",
+	}
 }

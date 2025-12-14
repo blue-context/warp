@@ -43,6 +43,9 @@ type Provider struct {
 	httpClient warp.HTTPClient
 }
 
+// Compile-time interface check
+var _ provider.Provider = (*Provider)(nil)
+
 // Option is a functional option for configuring the Ollama provider.
 type Option func(*Provider)
 

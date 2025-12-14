@@ -55,6 +55,9 @@ type Provider struct {
 	appTitle    string // X-Title header for app name
 }
 
+// Compile-time interface check
+var _ provider.Provider = (*Provider)(nil)
+
 // Option is a functional option for configuring the OpenRouter provider.
 type Option func(*Provider)
 

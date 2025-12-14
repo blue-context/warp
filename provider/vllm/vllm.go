@@ -24,7 +24,6 @@ package vllm
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -45,6 +44,9 @@ type Provider struct {
 	apiKey     string // Optional for self-hosted deployments
 	httpClient warp.HTTPClient
 }
+
+// Compile-time interface check
+var _ provider.Provider = (*Provider)(nil)
 
 // Option is a functional option for configuring the vLLM provider.
 type Option func(*Provider)
@@ -158,7 +160,10 @@ func (p *Provider) Supports() interface{} {
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) ImageGeneration(ctx context.Context, req *warp.ImageGenerationRequest) (*warp.ImageGenerationResponse, error) {
-	return nil, fmt.Errorf("image generation not supported by vllm provider")
+	return nil, &warp.WarpError{
+		Message:  "image generation is not supported by vLLM",
+		Provider: "vllm",
+	}
 }
 
 // ImageEdit edits an image using AI based on a text prompt.
@@ -167,7 +172,10 @@ func (p *Provider) ImageGeneration(ctx context.Context, req *warp.ImageGeneratio
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) ImageEdit(ctx context.Context, req *warp.ImageEditRequest) (*warp.ImageGenerationResponse, error) {
-	return nil, fmt.Errorf("image editing not supported by vllm provider")
+	return nil, &warp.WarpError{
+		Message:  "image editing is not supported by vLLM",
+		Provider: "vllm",
+	}
 }
 
 // ImageVariation creates variations of an existing image.
@@ -176,7 +184,10 @@ func (p *Provider) ImageEdit(ctx context.Context, req *warp.ImageEditRequest) (*
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) ImageVariation(ctx context.Context, req *warp.ImageVariationRequest) (*warp.ImageGenerationResponse, error) {
-	return nil, fmt.Errorf("image variation not supported by vllm provider")
+	return nil, &warp.WarpError{
+		Message:  "image variation is not supported by vLLM",
+		Provider: "vllm",
+	}
 }
 
 // Transcription transcribes audio to text.
@@ -185,7 +196,10 @@ func (p *Provider) ImageVariation(ctx context.Context, req *warp.ImageVariationR
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) Transcription(ctx context.Context, req *warp.TranscriptionRequest) (*warp.TranscriptionResponse, error) {
-	return nil, fmt.Errorf("transcription not supported by vllm provider")
+	return nil, &warp.WarpError{
+		Message:  "transcription is not supported by vLLM",
+		Provider: "vllm",
+	}
 }
 
 // Speech converts text to speech.
@@ -194,7 +208,10 @@ func (p *Provider) Transcription(ctx context.Context, req *warp.TranscriptionReq
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) Speech(ctx context.Context, req *warp.SpeechRequest) (io.ReadCloser, error) {
-	return nil, fmt.Errorf("speech synthesis not supported by vllm provider")
+	return nil, &warp.WarpError{
+		Message:  "speech synthesis is not supported by vLLM",
+		Provider: "vllm",
+	}
 }
 
 // Moderation checks content for policy violations.
@@ -203,5 +220,8 @@ func (p *Provider) Speech(ctx context.Context, req *warp.SpeechRequest) (io.Read
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) Moderation(ctx context.Context, req *warp.ModerationRequest) (*warp.ModerationResponse, error) {
-	return nil, fmt.Errorf("moderation not supported by vllm provider")
+	return nil, &warp.WarpError{
+		Message:  "moderation is not supported by vLLM",
+		Provider: "vllm",
+	}
 }

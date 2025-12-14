@@ -2,7 +2,6 @@ package openrouter
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/blue-context/warp"
@@ -15,7 +14,10 @@ import (
 //
 // Returns an error indicating the feature is not yet implemented.
 func (p *Provider) ImageGeneration(ctx context.Context, req *warp.ImageGenerationRequest) (*warp.ImageGenerationResponse, error) {
-	return nil, fmt.Errorf("image generation not yet implemented for OpenRouter provider")
+	return nil, &warp.WarpError{
+		Message:  "image generation is not yet implemented for OpenRouter",
+		Provider: "openrouter",
+	}
 }
 
 // Transcription transcribes audio to text.
@@ -24,7 +26,10 @@ func (p *Provider) ImageGeneration(ctx context.Context, req *warp.ImageGeneratio
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) Transcription(ctx context.Context, req *warp.TranscriptionRequest) (*warp.TranscriptionResponse, error) {
-	return nil, fmt.Errorf("transcription not supported by OpenRouter provider")
+	return nil, &warp.WarpError{
+		Message:  "transcription is not supported by OpenRouter",
+		Provider: "openrouter",
+	}
 }
 
 // Speech converts text to speech.
@@ -33,7 +38,10 @@ func (p *Provider) Transcription(ctx context.Context, req *warp.TranscriptionReq
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) Speech(ctx context.Context, req *warp.SpeechRequest) (io.ReadCloser, error) {
-	return nil, fmt.Errorf("speech synthesis not supported by OpenRouter provider")
+	return nil, &warp.WarpError{
+		Message:  "speech synthesis is not supported by OpenRouter",
+		Provider: "openrouter",
+	}
 }
 
 // ImageEdit edits an image using AI based on a text prompt.
@@ -42,7 +50,10 @@ func (p *Provider) Speech(ctx context.Context, req *warp.SpeechRequest) (io.Read
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) ImageEdit(ctx context.Context, req *warp.ImageEditRequest) (*warp.ImageGenerationResponse, error) {
-	return nil, fmt.Errorf("image editing not supported by OpenRouter provider")
+	return nil, &warp.WarpError{
+		Message:  "image editing is not supported by OpenRouter",
+		Provider: "openrouter",
+	}
 }
 
 // ImageVariation creates variations of an existing image.
@@ -51,7 +62,10 @@ func (p *Provider) ImageEdit(ctx context.Context, req *warp.ImageEditRequest) (*
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) ImageVariation(ctx context.Context, req *warp.ImageVariationRequest) (*warp.ImageGenerationResponse, error) {
-	return nil, fmt.Errorf("image variation not supported by OpenRouter provider")
+	return nil, &warp.WarpError{
+		Message:  "image variation is not supported by OpenRouter",
+		Provider: "openrouter",
+	}
 }
 
 // Moderation checks content for policy violations.
@@ -60,7 +74,10 @@ func (p *Provider) ImageVariation(ctx context.Context, req *warp.ImageVariationR
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) Moderation(ctx context.Context, req *warp.ModerationRequest) (*warp.ModerationResponse, error) {
-	return nil, fmt.Errorf("content moderation not supported by OpenRouter provider")
+	return nil, &warp.WarpError{
+		Message:  "content moderation is not supported by OpenRouter",
+		Provider: "openrouter",
+	}
 }
 
 // Rerank ranks documents by relevance to a query.
@@ -69,5 +86,8 @@ func (p *Provider) Moderation(ctx context.Context, req *warp.ModerationRequest) 
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) Rerank(ctx context.Context, req *warp.RerankRequest) (*warp.RerankResponse, error) {
-	return nil, fmt.Errorf("document reranking not supported by OpenRouter provider")
+	return nil, &warp.WarpError{
+		Message:  "document reranking is not supported by OpenRouter",
+		Provider: "openrouter",
+	}
 }

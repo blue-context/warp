@@ -22,7 +22,6 @@ package openai
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -39,6 +38,9 @@ type Provider struct {
 	apiBase    string
 	httpClient warp.HTTPClient
 }
+
+// Compile-time interface check
+var _ provider.Provider = (*Provider)(nil)
 
 // Option is a functional option for configuring the OpenAI provider.
 type Option func(*Provider)
@@ -161,5 +163,8 @@ func (p *Provider) Supports() interface{} {
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) Rerank(ctx context.Context, req *warp.RerankRequest) (*warp.RerankResponse, error) {
-	return nil, fmt.Errorf("rerank not supported by openai provider")
+	return nil, &warp.WarpError{
+		Message:  "rerank is not supported by OpenAI",
+		Provider: "openai",
+	}
 }

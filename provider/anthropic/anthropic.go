@@ -22,7 +22,6 @@ package anthropic
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -41,6 +40,9 @@ type Provider struct {
 	apiVersion string
 	httpClient warp.HTTPClient
 }
+
+// Compile-time interface check
+var _ provider.Provider = (*Provider)(nil)
 
 // Option is a functional option for configuring the Anthropic provider.
 type Option func(*Provider)
@@ -189,7 +191,10 @@ func (p *Provider) Embedding(ctx context.Context, req *warp.EmbeddingRequest) (*
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) Rerank(ctx context.Context, req *warp.RerankRequest) (*warp.RerankResponse, error) {
-	return nil, fmt.Errorf("rerank not supported by anthropic provider")
+	return nil, &warp.WarpError{
+		Message:  "rerank is not supported by Anthropic",
+		Provider: "anthropic",
+	}
 }
 
 // Moderation checks content for policy violations.
