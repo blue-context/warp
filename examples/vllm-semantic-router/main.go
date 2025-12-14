@@ -15,14 +15,14 @@ func main() {
 	// Create vLLM Semantic Router provider
 	// Defaults to localhost:8801 for main API, localhost:8080 for classification
 	provider, err := vllmsemanticrouter.NewProvider(
-		// Optional: Custom base URL
-		// vllmsemanticrouter.WithBaseURL("http://router.example.com:8801"),
+	// Optional: Custom base URL
+	// vllmsemanticrouter.WithBaseURL("http://router.example.com:8801"),
 
-		// Optional: Custom classification URL
-		// vllmsemanticrouter.WithClassificationURL("http://classifier.example.com:8080"),
+	// Optional: Custom classification URL
+	// vllmsemanticrouter.WithClassificationURL("http://classifier.example.com:8080"),
 
-		// Optional: API key (if your deployment requires authentication)
-		// vllmsemanticrouter.WithAPIKey(os.Getenv("VLLM_ROUTER_API_KEY")),
+	// Optional: API key (if your deployment requires authentication)
+	// vllmsemanticrouter.WithAPIKey(os.Getenv("VLLM_ROUTER_API_KEY")),
 	)
 	if err != nil {
 		log.Fatalf("Failed to create provider: %v", err)

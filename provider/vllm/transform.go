@@ -10,40 +10,40 @@ import (
 // vLLM uses the /inference/v1/generate endpoint with a format similar to OpenAI
 // but with vLLM-specific parameters.
 type vllmRequest struct {
-	Model              string   `json:"model"`
-	Prompt             string   `json:"prompt"`
-	MaxTokens          *int     `json:"max_tokens,omitempty"`
-	Temperature        *float64 `json:"temperature,omitempty"`
-	TopP               *float64 `json:"top_p,omitempty"`
-	N                  *int     `json:"n,omitempty"`
-	BestOf             *int     `json:"best_of,omitempty"`
-	PresencePenalty    *float64 `json:"presence_penalty,omitempty"`
-	FrequencyPenalty   *float64 `json:"frequency_penalty,omitempty"`
-	RepetitionPenalty  *float64 `json:"repetition_penalty,omitempty"`
-	Stop               []string `json:"stop,omitempty"`
-	Stream             bool     `json:"stream,omitempty"`
-	Logprobs           *int     `json:"logprobs,omitempty"`
-	ResponseFormat     *string  `json:"response_format,omitempty"` // For JSON mode
+	Model             string   `json:"model"`
+	Prompt            string   `json:"prompt"`
+	MaxTokens         *int     `json:"max_tokens,omitempty"`
+	Temperature       *float64 `json:"temperature,omitempty"`
+	TopP              *float64 `json:"top_p,omitempty"`
+	N                 *int     `json:"n,omitempty"`
+	BestOf            *int     `json:"best_of,omitempty"`
+	PresencePenalty   *float64 `json:"presence_penalty,omitempty"`
+	FrequencyPenalty  *float64 `json:"frequency_penalty,omitempty"`
+	RepetitionPenalty *float64 `json:"repetition_penalty,omitempty"`
+	Stop              []string `json:"stop,omitempty"`
+	Stream            bool     `json:"stream,omitempty"`
+	Logprobs          *int     `json:"logprobs,omitempty"`
+	ResponseFormat    *string  `json:"response_format,omitempty"` // For JSON mode
 }
 
 // vllmResponse represents a vLLM native generate response.
 //
 // vLLM returns an OpenAI-compatible response format even from the native endpoint.
 type vllmResponse struct {
-	ID      string         `json:"id"`
-	Object  string         `json:"object"`
-	Created int64          `json:"created"`
-	Model   string         `json:"model"`
-	Choices []vllmChoice   `json:"choices"`
-	Usage   *vllmUsage     `json:"usage,omitempty"`
+	ID      string       `json:"id"`
+	Object  string       `json:"object"`
+	Created int64        `json:"created"`
+	Model   string       `json:"model"`
+	Choices []vllmChoice `json:"choices"`
+	Usage   *vllmUsage   `json:"usage,omitempty"`
 }
 
 // vllmChoice represents a single completion choice in vLLM response.
 type vllmChoice struct {
-	Index        int     `json:"index"`
-	Text         string  `json:"text"`
-	Logprobs     any     `json:"logprobs,omitempty"`
-	FinishReason string  `json:"finish_reason"`
+	Index        int    `json:"index"`
+	Text         string `json:"text"`
+	Logprobs     any    `json:"logprobs,omitempty"`
+	FinishReason string `json:"finish_reason"`
 }
 
 // vllmUsage represents token usage in vLLM response.
@@ -60,15 +60,15 @@ type vllmUsage struct {
 // The stream parameter is passed explicitly by caller (Completion vs CompletionStream).
 func transformToVLLMRequest(req *warp.CompletionRequest, stream bool) *vllmRequest {
 	vllmReq := &vllmRequest{
-		Model:             req.Model,
-		Prompt:            messagesToPrompt(req.Messages),
-		Stream:            stream,
-		MaxTokens:         req.MaxTokens,
-		Temperature:       req.Temperature,
-		TopP:              req.TopP,
-		PresencePenalty:   req.PresencePenalty,
-		FrequencyPenalty:  req.FrequencyPenalty,
-		Stop:              req.Stop,
+		Model:            req.Model,
+		Prompt:           messagesToPrompt(req.Messages),
+		Stream:           stream,
+		MaxTokens:        req.MaxTokens,
+		Temperature:      req.Temperature,
+		TopP:             req.TopP,
+		PresencePenalty:  req.PresencePenalty,
+		FrequencyPenalty: req.FrequencyPenalty,
+		Stop:             req.Stop,
 	}
 
 	// Set N parameter (number of completions)

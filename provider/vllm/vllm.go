@@ -140,7 +140,7 @@ func (p *Provider) Supports() interface{} {
 	return provider.Capabilities{
 		Completion:      true,
 		Streaming:       true,
-		Embedding:       true,  // via /pooling endpoint
+		Embedding:       true, // via /pooling endpoint
 		ImageGeneration: false,
 		Transcription:   false,
 		Speech:          false,

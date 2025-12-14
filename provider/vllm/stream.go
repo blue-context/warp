@@ -112,12 +112,12 @@ type vllmStream struct {
 //
 // vLLM returns OpenAI-compatible streaming chunks.
 type vllmStreamChunk struct {
-	ID      string              `json:"id"`
-	Object  string              `json:"object"`
-	Created int64               `json:"created"`
-	Model   string              `json:"model"`
-	Choices []vllmStreamChoice  `json:"choices"`
-	Usage   *vllmUsage          `json:"usage,omitempty"`
+	ID      string             `json:"id"`
+	Object  string             `json:"object"`
+	Created int64              `json:"created"`
+	Model   string             `json:"model"`
+	Choices []vllmStreamChoice `json:"choices"`
+	Usage   *vllmUsage         `json:"usage,omitempty"`
 }
 
 // vllmStreamChoice represents a single choice in a streaming chunk.
