@@ -29,7 +29,6 @@ package azure
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -230,7 +229,10 @@ func (p *Provider) Supports() interface{} {
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) Rerank(ctx context.Context, req *warp.RerankRequest) (*warp.RerankResponse, error) {
-	return nil, fmt.Errorf("rerank not supported by azure provider")
+	return nil, &warp.WarpError{
+		Message:  "rerank is not supported by Azure",
+		Provider: "azure",
+	}
 }
 
 // Moderation checks content for policy violations.

@@ -24,7 +24,6 @@ package ollama
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -137,7 +136,10 @@ func (p *Provider) Supports() interface{} {
 //
 // Returns an error indicating the feature is not supported.
 func (p *Provider) Rerank(ctx context.Context, req *warp.RerankRequest) (*warp.RerankResponse, error) {
-	return nil, fmt.Errorf("rerank not supported by ollama provider")
+	return nil, &warp.WarpError{
+		Message:  "rerank is not supported by Ollama",
+		Provider: "ollama",
+	}
 }
 
 // Moderation checks content for policy violations.
