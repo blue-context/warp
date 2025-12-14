@@ -45,6 +45,11 @@ import (
 //	    fmt.Print(chunk.Choices[0].Delta.Content)
 //	}
 func (p *Provider) CompletionStream(ctx context.Context, req *warp.CompletionRequest) (warp.Stream, error) {
+	// Check context cancellation before starting
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	// Transform request to vLLM format (streaming)
 	vllmReq := transformToVLLMRequest(req, true)
 
@@ -78,7 +83,10 @@ func (p *Provider) CompletionStream(ctx context.Context, req *warp.CompletionReq
 	// Check status code
 	if httpResp.StatusCode != http.StatusOK {
 		defer httpResp.Body.Close()
-		body, _ := io.ReadAll(httpResp.Body)
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			body = []byte("failed to read error response")
+		}
 		return nil, warp.ParseProviderError("vllm", httpResp.StatusCode, body, nil)
 	}
 
@@ -247,5 +255,8 @@ func transformVLLMStreamChunk(vllmChunk *vllmStreamChunk) *warp.CompletionChunk 
 // It is safe to call Close multiple times.
 // Close must be called even if Recv returns an error.
 func (s *vllmStream) Close() error {
+	if s.closer == nil {
+		return nil
+	}
 	return s.closer.Close()
 }

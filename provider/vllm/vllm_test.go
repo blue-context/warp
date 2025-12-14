@@ -1,6 +1,7 @@
 package vllm
 
 import (
+	"bufio"
 	"context"
 	"io"
 	"net/http"
@@ -638,6 +639,28 @@ func TestMessagesToPrompt(t *testing.T) {
 			},
 			want: "User: Hello!\n\nAssistant: Hi there!\n\nUser: How are you?\n\nAssistant:",
 		},
+		{
+			name:     "empty messages",
+			messages: []warp.Message{},
+			want:     "",
+		},
+		{
+			name: "multimodal content",
+			messages: []warp.Message{
+				{Role: "user", Content: []warp.ContentPart{
+					{Type: "text", Text: "Hello"},
+					{Type: "text", Text: " world"},
+				}},
+			},
+			want: "User: Hello world\n\nAssistant:",
+		},
+		{
+			name: "empty multimodal content",
+			messages: []warp.Message{
+				{Role: "user", Content: []warp.ContentPart{}},
+			},
+			want: "User: \n\nAssistant:",
+		},
 	}
 
 	for _, tt := range tests {
@@ -648,4 +671,293 @@ func TestMessagesToPrompt(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestContextCancellation tests context cancellation handling
+func TestContextCancellation(t *testing.T) {
+	provider, err := NewProvider()
+	if err != nil {
+		t.Fatalf("NewProvider() error = %v", err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // Cancel immediately
+
+	t.Run("Completion", func(t *testing.T) {
+		_, err := provider.Completion(ctx, &warp.CompletionRequest{
+			Model:    "meta-llama/Llama-2-7b-hf",
+			Messages: []warp.Message{{Role: "user", Content: "test"}},
+		})
+		if err != context.Canceled {
+			t.Errorf("Completion() error = %v, want context.Canceled", err)
+		}
+	})
+
+	t.Run("CompletionStream", func(t *testing.T) {
+		_, err := provider.CompletionStream(ctx, &warp.CompletionRequest{
+			Model:    "meta-llama/Llama-2-7b-hf",
+			Messages: []warp.Message{{Role: "user", Content: "test"}},
+		})
+		if err != context.Canceled {
+			t.Errorf("CompletionStream() error = %v, want context.Canceled", err)
+		}
+	})
+
+	t.Run("Embedding", func(t *testing.T) {
+		_, err := provider.Embedding(ctx, &warp.EmbeddingRequest{
+			Model: "intfloat/e5-small",
+			Input: "test",
+		})
+		if err != context.Canceled {
+			t.Errorf("Embedding() error = %v, want context.Canceled", err)
+		}
+	})
+
+	t.Run("Rerank", func(t *testing.T) {
+		_, err := provider.Rerank(ctx, &warp.RerankRequest{
+			Model:     "BAAI/bge-reranker-large",
+			Query:     "test",
+			Documents: []string{"doc1"},
+		})
+		if err != context.Canceled {
+			t.Errorf("Rerank() error = %v, want context.Canceled", err)
+		}
+	})
+}
+
+// TestStreamErrorHandling tests stream error handling
+func TestStreamErrorHandling(t *testing.T) {
+	t.Run("stream error status code", func(t *testing.T) {
+		mockClient := &mockHTTPClient{
+			doFunc: func(req *http.Request) (*http.Response, error) {
+				return &http.Response{
+					StatusCode: http.StatusInternalServerError,
+					Body:       io.NopCloser(strings.NewReader(`{"error": "server error"}`)),
+					Header:     make(http.Header),
+				}, nil
+			},
+		}
+
+		provider, err := NewProvider(WithHTTPClient(mockClient))
+		if err != nil {
+			t.Fatalf("NewProvider() error = %v", err)
+		}
+
+		_, err = provider.CompletionStream(context.Background(), &warp.CompletionRequest{
+			Model:    "meta-llama/Llama-2-7b-hf",
+			Messages: []warp.Message{{Role: "user", Content: "test"}},
+		})
+		if err == nil {
+			t.Error("CompletionStream() error = nil, want error")
+		}
+	})
+
+	t.Run("stream close with nil closer", func(t *testing.T) {
+		stream := &vllmStream{closer: nil}
+		err := stream.Close()
+		if err != nil {
+			t.Errorf("Close() error = %v, want nil for nil closer", err)
+		}
+	})
+
+	t.Run("stream context cancellation during recv", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		stream := &vllmStream{
+			ctx:    ctx,
+			reader: bufio.NewReader(strings.NewReader("data: test\n")),
+			closer: io.NopCloser(strings.NewReader("")),
+		}
+
+		cancel() // Cancel context
+
+		_, err := stream.Recv()
+		if err != context.Canceled {
+			t.Errorf("Recv() error = %v, want context.Canceled", err)
+		}
+
+		// Subsequent calls should return cached error
+		_, err2 := stream.Recv()
+		if err2 != context.Canceled {
+			t.Errorf("Second Recv() error = %v, want context.Canceled", err2)
+		}
+	})
+
+	t.Run("stream recv EOF", func(t *testing.T) {
+		stream := &vllmStream{
+			ctx:    context.Background(),
+			reader: bufio.NewReader(strings.NewReader("")),
+			closer: io.NopCloser(strings.NewReader("")),
+		}
+
+		_, err := stream.Recv()
+		if err != io.EOF {
+			t.Errorf("Recv() error = %v, want io.EOF", err)
+		}
+	})
+
+	t.Run("stream recv invalid JSON", func(t *testing.T) {
+		stream := &vllmStream{
+			ctx:    context.Background(),
+			reader: bufio.NewReader(strings.NewReader("data: {invalid json}\n")),
+			closer: io.NopCloser(strings.NewReader("")),
+		}
+
+		_, err := stream.Recv()
+		if err == nil {
+			t.Error("Recv() error = nil, want JSON parse error")
+		}
+	})
+
+	t.Run("stream recv DONE message", func(t *testing.T) {
+		stream := &vllmStream{
+			ctx:    context.Background(),
+			reader: bufio.NewReader(strings.NewReader("data: [DONE]\n")),
+			closer: io.NopCloser(strings.NewReader("")),
+		}
+
+		_, err := stream.Recv()
+		if err != io.EOF {
+			t.Errorf("Recv() error = %v, want io.EOF", err)
+		}
+	})
+}
+
+// TestEmbeddingInputTypes tests different input types for embedding
+func TestEmbeddingInputTypes(t *testing.T) {
+	mockClient := &mockHTTPClient{
+		doFunc: func(req *http.Request) (*http.Response, error) {
+			mockResp := `{"data": [{"data": [0.1, 0.2, 0.3]}]}`
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(strings.NewReader(mockResp)),
+				Header:     make(http.Header),
+			}, nil
+		},
+	}
+
+	provider, err := NewProvider(WithHTTPClient(mockClient))
+	if err != nil {
+		t.Fatalf("NewProvider() error = %v", err)
+	}
+
+	t.Run("string input", func(t *testing.T) {
+		resp, err := provider.Embedding(context.Background(), &warp.EmbeddingRequest{
+			Model: "intfloat/e5-small",
+			Input: "test string",
+		})
+		if err != nil {
+			t.Errorf("Embedding() error = %v, want nil", err)
+		}
+		if len(resp.Data) != 1 {
+			t.Errorf("len(Data) = %v, want 1", len(resp.Data))
+		}
+	})
+
+	t.Run("invalid input type", func(t *testing.T) {
+		_, err := provider.Embedding(context.Background(), &warp.EmbeddingRequest{
+			Model: "intfloat/e5-small",
+			Input: 123, // Invalid type
+		})
+		if err == nil {
+			t.Error("Embedding() error = nil, want error for invalid input type")
+		}
+	})
+}
+
+// TestErrorResponseReading tests error response reading failures
+func TestErrorResponseReading(t *testing.T) {
+	t.Run("completion read error", func(t *testing.T) {
+		mockClient := &mockHTTPClient{
+			doFunc: func(req *http.Request) (*http.Response, error) {
+				return &http.Response{
+					StatusCode: http.StatusBadRequest,
+					Body:       io.NopCloser(&errorReader{}),
+					Header:     make(http.Header),
+				}, nil
+			},
+		}
+
+		provider, err := NewProvider(WithHTTPClient(mockClient))
+		if err != nil {
+			t.Fatalf("NewProvider() error = %v", err)
+		}
+
+		_, err = provider.Completion(context.Background(), &warp.CompletionRequest{
+			Model:    "meta-llama/Llama-2-7b-hf",
+			Messages: []warp.Message{{Role: "user", Content: "test"}},
+		})
+		if err == nil {
+			t.Error("Completion() error = nil, want error")
+		}
+	})
+}
+
+// errorReader is a reader that always returns errors
+type errorReader struct{}
+
+func (e *errorReader) Read(p []byte) (n int, err error) {
+	return 0, io.ErrUnexpectedEOF
+}
+
+// TestTransformEdgeCases tests transformation edge cases
+func TestTransformEdgeCases(t *testing.T) {
+	t.Run("extractTextContent with unknown type", func(t *testing.T) {
+		result := extractTextContent(123)
+		if result != "" {
+			t.Errorf("extractTextContent(123) = %q, want empty string", result)
+		}
+	})
+
+	t.Run("transformToVLLMRequest with N parameter", func(t *testing.T) {
+		req := &warp.CompletionRequest{
+			Model:    "test-model",
+			Messages: []warp.Message{{Role: "user", Content: "test"}},
+			N:        intPtr(3),
+		}
+		vllmReq := transformToVLLMRequest(req, false)
+		if vllmReq.N == nil || *vllmReq.N != 3 {
+			t.Errorf("N = %v, want 3", vllmReq.N)
+		}
+	})
+
+	t.Run("transformToVLLMRequest with JSON mode", func(t *testing.T) {
+		req := &warp.CompletionRequest{
+			Model:    "test-model",
+			Messages: []warp.Message{{Role: "user", Content: "test"}},
+			ResponseFormat: &warp.ResponseFormat{
+				Type: "json_object",
+			},
+		}
+		vllmReq := transformToVLLMRequest(req, false)
+		if vllmReq.ResponseFormat == nil || *vllmReq.ResponseFormat != "json" {
+			t.Errorf("ResponseFormat = %v, want 'json'", vllmReq.ResponseFormat)
+		}
+	})
+
+	t.Run("transformFromVLLMResponse with nil usage", func(t *testing.T) {
+		vllmResp := &vllmResponse{
+			ID:      "test-id",
+			Object:  "text_completion",
+			Created: 1234567890,
+			Model:   "test-model",
+			Choices: []vllmChoice{
+				{Index: 0, Text: "test response", FinishReason: "stop"},
+			},
+			Usage: nil,
+		}
+		resp := transformFromVLLMResponse(vllmResp)
+		if resp.Usage != nil {
+			t.Errorf("Usage = %v, want nil", resp.Usage)
+		}
+	})
+
+	t.Run("estimateTokenUsage with nil request", func(t *testing.T) {
+		usage := estimateTokenUsage(nil, "test response")
+		if usage.PromptTokens != 0 {
+			t.Errorf("PromptTokens = %v, want 0", usage.PromptTokens)
+		}
+		if usage.CompletionTokens == 0 {
+			t.Error("CompletionTokens = 0, want > 0")
+		}
+	})
 }

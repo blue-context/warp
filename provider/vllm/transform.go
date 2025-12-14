@@ -133,10 +133,13 @@ func extractTextContent(content any) string {
 		return c
 	case []warp.ContentPart:
 		// For multimodal content, concatenate text parts
+		if len(c) == 0 {
+			return ""
+		}
 		var text string
-		for _, part := range c {
-			if part.Type == "text" {
-				text += part.Text
+		for i := range c {
+			if c[i].Type == "text" {
+				text += c[i].Text
 			}
 		}
 		return text

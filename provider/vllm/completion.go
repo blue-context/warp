@@ -31,6 +31,11 @@ import (
 //	    },
 //	})
 func (p *Provider) Completion(ctx context.Context, req *warp.CompletionRequest) (*warp.CompletionResponse, error) {
+	// Check context cancellation before starting
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	// Transform request to vLLM format (non-streaming)
 	vllmReq := transformToVLLMRequest(req, false)
 
@@ -63,7 +68,10 @@ func (p *Provider) Completion(ctx context.Context, req *warp.CompletionRequest) 
 
 	// Check status code
 	if httpResp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(httpResp.Body)
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			body = []byte("failed to read error response")
+		}
 		return nil, warp.ParseProviderError("vllm", httpResp.StatusCode, body, nil)
 	}
 
@@ -98,6 +106,11 @@ func (p *Provider) Completion(ctx context.Context, req *warp.CompletionRequest) 
 //	    Input: "Hello, world!",
 //	})
 func (p *Provider) Embedding(ctx context.Context, req *warp.EmbeddingRequest) (*warp.EmbeddingResponse, error) {
+	// Check context cancellation before starting
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	// Transform input to array format
 	var inputs []string
 	switch input := req.Input.(type) {
@@ -145,7 +158,10 @@ func (p *Provider) Embedding(ctx context.Context, req *warp.EmbeddingRequest) (*
 
 	// Check status code
 	if httpResp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(httpResp.Body)
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			body = []byte("failed to read error response")
+		}
 		return nil, warp.ParseProviderError("vllm", httpResp.StatusCode, body, nil)
 	}
 
@@ -205,6 +221,11 @@ func (p *Provider) Embedding(ctx context.Context, req *warp.EmbeddingRequest) (*
 //	    TopN: warp.IntPtr(1),
 //	})
 func (p *Provider) Rerank(ctx context.Context, req *warp.RerankRequest) (*warp.RerankResponse, error) {
+	// Check context cancellation before starting
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	// Create vLLM rerank request
 	rerankReq := map[string]any{
 		"model":     req.Model,
@@ -249,7 +270,10 @@ func (p *Provider) Rerank(ctx context.Context, req *warp.RerankRequest) (*warp.R
 
 	// Check status code
 	if httpResp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(httpResp.Body)
+		body, err := io.ReadAll(httpResp.Body)
+		if err != nil {
+			body = []byte("failed to read error response")
+		}
 		return nil, warp.ParseProviderError("vllm", httpResp.StatusCode, body, nil)
 	}
 
