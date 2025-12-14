@@ -5,6 +5,8 @@ import (
 	"errors"
 	"io"
 	"testing"
+
+	"github.com/blue-context/warp/types"
 )
 
 // mockModerationProvider is a test provider that implements moderation.
@@ -39,11 +41,35 @@ func (m *mockModerationProvider) Speech(ctx context.Context, req *SpeechRequest)
 	return nil, errors.New("not implemented")
 }
 
+func (m *mockModerationProvider) ImageGeneration(ctx context.Context, req *ImageGenerationRequest) (*ImageGenerationResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockModerationProvider) ImageEdit(ctx context.Context, req *ImageEditRequest) (*ImageGenerationResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockModerationProvider) ImageVariation(ctx context.Context, req *ImageVariationRequest) (*ImageGenerationResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
 func (m *mockModerationProvider) Moderation(ctx context.Context, req *ModerationRequest) (*ModerationResponse, error) {
 	if m.moderationErr != nil {
 		return nil, m.moderationErr
 	}
 	return m.moderationResp, nil
+}
+
+func (m *mockModerationProvider) Rerank(ctx context.Context, req *RerankRequest) (*RerankResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockModerationProvider) GetModelInfo(model string) *types.ModelInfo {
+	return nil
+}
+
+func (m *mockModerationProvider) ListModels() []*types.ModelInfo {
+	return nil
 }
 
 func (m *mockModerationProvider) Supports() interface{} {

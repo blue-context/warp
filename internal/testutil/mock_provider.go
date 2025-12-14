@@ -126,6 +126,41 @@ func (m *MockProvider) Speech(ctx context.Context, req *warp.SpeechRequest) (io.
 	return nil, nil
 }
 
+// ImageGeneration provides a mock implementation of image generation.
+func (m *MockProvider) ImageGeneration(ctx context.Context, req *warp.ImageGenerationRequest) (*warp.ImageGenerationResponse, error) {
+	return nil, nil
+}
+
+// ImageEdit provides a mock implementation of image editing.
+func (m *MockProvider) ImageEdit(ctx context.Context, req *warp.ImageEditRequest) (*warp.ImageGenerationResponse, error) {
+	return nil, nil
+}
+
+// ImageVariation provides a mock implementation of image variation.
+func (m *MockProvider) ImageVariation(ctx context.Context, req *warp.ImageVariationRequest) (*warp.ImageGenerationResponse, error) {
+	return nil, nil
+}
+
+// Moderation provides a mock implementation of content moderation.
+func (m *MockProvider) Moderation(ctx context.Context, req *warp.ModerationRequest) (*warp.ModerationResponse, error) {
+	return nil, nil
+}
+
+// Rerank provides a mock implementation of document reranking.
+func (m *MockProvider) Rerank(ctx context.Context, req *warp.RerankRequest) (*warp.RerankResponse, error) {
+	return nil, nil
+}
+
+// GetModelInfo returns model information.
+func (m *MockProvider) GetModelInfo(model string) *provider.ModelInfo {
+	return nil
+}
+
+// ListModels returns a list of all supported models.
+func (m *MockProvider) ListModels() []*provider.ModelInfo {
+	return nil
+}
+
 // Supports returns capabilities.
 //
 // If SupportsFunc is set, it calls that function.

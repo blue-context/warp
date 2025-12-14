@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/blue-context/warp/types"
 )
 
 // mockImageProvider is a mock provider that implements ImageGeneration, ImageEdit, and ImageVariation
@@ -71,6 +73,18 @@ func (m *mockImageProvider) Speech(ctx context.Context, req *SpeechRequest) (io.
 
 func (m *mockImageProvider) Moderation(ctx context.Context, req *ModerationRequest) (*ModerationResponse, error) {
 	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockImageProvider) Rerank(ctx context.Context, req *RerankRequest) (*RerankResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockImageProvider) GetModelInfo(model string) *types.ModelInfo {
+	return nil
+}
+
+func (m *mockImageProvider) ListModels() []*types.ModelInfo {
+	return nil
 }
 
 func (m *mockImageProvider) Supports() interface{} {
@@ -146,6 +160,18 @@ func (m *mockNoImageProvider) Speech(ctx context.Context, req *SpeechRequest) (i
 
 func (m *mockNoImageProvider) Moderation(ctx context.Context, req *ModerationRequest) (*ModerationResponse, error) {
 	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockNoImageProvider) Rerank(ctx context.Context, req *RerankRequest) (*RerankResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (m *mockNoImageProvider) GetModelInfo(model string) *types.ModelInfo {
+	return nil
+}
+
+func (m *mockNoImageProvider) ListModels() []*types.ModelInfo {
+	return nil
 }
 
 func (m *mockNoImageProvider) Supports() interface{} {

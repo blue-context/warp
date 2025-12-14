@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/blue-context/warp/types"
 )
 
 // mockTranscriptionProvider implements Provider interface for testing
@@ -45,8 +47,32 @@ func (m *mockTranscriptionProvider) Speech(ctx context.Context, req *SpeechReque
 	return nil, errors.New("not implemented")
 }
 
+func (m *mockTranscriptionProvider) ImageGeneration(ctx context.Context, req *ImageGenerationRequest) (*ImageGenerationResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockTranscriptionProvider) ImageEdit(ctx context.Context, req *ImageEditRequest) (*ImageGenerationResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockTranscriptionProvider) ImageVariation(ctx context.Context, req *ImageVariationRequest) (*ImageGenerationResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
 func (m *mockTranscriptionProvider) Moderation(ctx context.Context, req *ModerationRequest) (*ModerationResponse, error) {
 	return nil, errors.New("not implemented")
+}
+
+func (m *mockTranscriptionProvider) Rerank(ctx context.Context, req *RerankRequest) (*RerankResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockTranscriptionProvider) GetModelInfo(model string) *types.ModelInfo {
+	return nil
+}
+
+func (m *mockTranscriptionProvider) ListModels() []*types.ModelInfo {
+	return nil
 }
 
 func (m *mockTranscriptionProvider) Supports() interface{} {
@@ -381,8 +407,32 @@ func (m *mockSpeechProvider) Speech(ctx context.Context, req *SpeechRequest) (io
 	return io.NopCloser(bytes.NewReader(m.audioData)), nil
 }
 
+func (m *mockSpeechProvider) ImageGeneration(ctx context.Context, req *ImageGenerationRequest) (*ImageGenerationResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockSpeechProvider) ImageEdit(ctx context.Context, req *ImageEditRequest) (*ImageGenerationResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockSpeechProvider) ImageVariation(ctx context.Context, req *ImageVariationRequest) (*ImageGenerationResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
 func (m *mockSpeechProvider) Moderation(ctx context.Context, req *ModerationRequest) (*ModerationResponse, error) {
 	return nil, errors.New("not implemented")
+}
+
+func (m *mockSpeechProvider) Rerank(ctx context.Context, req *RerankRequest) (*RerankResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockSpeechProvider) GetModelInfo(model string) *types.ModelInfo {
+	return nil
+}
+
+func (m *mockSpeechProvider) ListModels() []*types.ModelInfo {
+	return nil
 }
 
 func (m *mockSpeechProvider) Supports() interface{} {

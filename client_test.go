@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/blue-context/warp/cache"
+	"github.com/blue-context/warp/types"
 )
 
 // Capabilities defines what operations a provider supports (for testing).
@@ -95,6 +96,18 @@ func (m *mockProvider) Moderation(ctx context.Context, req *ModerationRequest) (
 	return nil, errors.New("not implemented")
 }
 
+func (m *mockProvider) ImageGeneration(ctx context.Context, req *ImageGenerationRequest) (*ImageGenerationResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockProvider) ImageEdit(ctx context.Context, req *ImageEditRequest) (*ImageGenerationResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockProvider) ImageVariation(ctx context.Context, req *ImageVariationRequest) (*ImageGenerationResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
 func (m *mockProvider) Rerank(ctx context.Context, req *RerankRequest) (*RerankResponse, error) {
 	m.rerankCtx = ctx
 	m.rerankReq = req
@@ -102,6 +115,14 @@ func (m *mockProvider) Rerank(ctx context.Context, req *RerankRequest) (*RerankR
 		return nil, m.rerankErr
 	}
 	return m.rerankResp, nil
+}
+
+func (m *mockProvider) GetModelInfo(model string) *types.ModelInfo {
+	return nil
+}
+
+func (m *mockProvider) ListModels() []*types.ModelInfo {
+	return nil
 }
 
 func (m *mockProvider) Supports() interface{} {
