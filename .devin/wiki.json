@@ -1,0 +1,103 @@
+{
+  "repo_notes": [
+    {
+      "content": "Warp is a unified Go SDK for calling multiple LLM providers with zero external dependencies. The codebase is organized into several key areas: the provider/ folder contains 12 provider implementations (OpenAI, Anthropic, Azure, Bedrock, Vertex AI, Groq, Ollama, Cohere, Together, OpenRouter, vLLM, and vLLM Semantic Router), the root-level client implementation (client.go) provides the main API surface, and the router/ folder implements load balancing and fallback logic. Documentation should emphasize the provider interface system as the core architecture and highlight the comprehensive 4-layer testing strategy (compile-time checks, interface compliance, stub validation, and capabilities accuracy tests) that ensures all providers correctly implement the interface.",
+      "author": "Development Team"
+    },
+    {
+      "content": "The provider/ folder is the highest priority for documentation. Each provider package (provider/openai/, provider/anthropic/, etc.) implements the same 14-method Provider interface defined in provider/provider.go. This interface includes methods for chat completion, streaming, embeddings, image generation/editing/variation, audio transcription, text-to-speech, content moderation, and document reranking. The testing.go file in the provider/ folder contains reusable test utilities that verify interface compliance, stub method consistency, and capabilities accuracy across all providers.",
+      "author": "Development Team"
+    },
+    {
+      "content": "Important relationships: The client.go file at the root uses the provider registry (provider/registry.go) to route requests to the appropriate provider implementation. The router/ folder implements intelligent routing with features like load balancing, cost-based routing, and automatic fallbacks. The callback/ folder provides hooks for logging and observability. The examples/ folder demonstrates all supported features and should be referenced in documentation to show real-world usage patterns.",
+      "author": "Development Team"
+    }
+  ],
+  "pages": [
+    {
+      "title": "Architecture Overview",
+      "purpose": "High-level overview of the Warp SDK architecture, explaining how the client, provider interface, and router work together to provide a unified API for multiple LLM providers",
+      "parent": null
+    },
+    {
+      "title": "Provider System",
+      "purpose": "Detailed documentation of the provider interface system, including the 14 required methods, how providers are registered, and the capabilities system that declares which features each provider supports",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "Supported Providers",
+      "purpose": "Documentation of all 12 provider implementations, their capabilities, configuration options, and feature support matrix showing which providers support completions, streaming, embeddings, images, audio, moderation, and reranking",
+      "parent": "Provider System"
+    },
+    {
+      "title": "Testing Infrastructure",
+      "purpose": "Documentation of the 4-layer testing strategy: compile-time interface checks, interface compliance tests, stub method validation, and capabilities accuracy tests. Explains how these tests prevent bugs where providers don't implement the full interface",
+      "parent": "Provider System"
+    },
+    {
+      "title": "Implementing a New Provider",
+      "purpose": "Step-by-step guide for adding a new LLM provider, including implementing all 14 interface methods, adding compile-time checks, creating compliance tests, and properly stubbing unsupported features with WarpError",
+      "parent": "Provider System"
+    },
+    {
+      "title": "Client API",
+      "purpose": "Documentation of the main Warp client API including initialization, configuration options, making completion requests, handling streaming responses, and managing client lifecycle",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "Completion and Streaming",
+      "purpose": "Detailed documentation of chat completion and streaming features, request/response formats, message structures, streaming chunks, and handling completion events",
+      "parent": "Client API"
+    },
+    {
+      "title": "Embeddings",
+      "purpose": "Documentation of text embedding functionality, supported embedding models across providers, request formats, and handling embedding responses",
+      "parent": "Client API"
+    },
+    {
+      "title": "Image Generation and Editing",
+      "purpose": "Documentation of image-related features including image generation from text prompts, image editing with masks, and creating image variations. Covers providers that support these features and request/response formats",
+      "parent": "Client API"
+    },
+    {
+      "title": "Audio Features",
+      "purpose": "Documentation of audio transcription (speech-to-text) and text-to-speech features, supported audio formats, and handling audio streams",
+      "parent": "Client API"
+    },
+    {
+      "title": "Content Moderation",
+      "purpose": "Documentation of content moderation features for detecting harmful content, moderation categories, and interpreting moderation scores",
+      "parent": "Client API"
+    },
+    {
+      "title": "Document Reranking",
+      "purpose": "Documentation of reranking functionality for RAG applications, explaining how to rerank search results for better relevance",
+      "parent": "Client API"
+    },
+    {
+      "title": "Router and Load Balancing",
+      "purpose": "Documentation of the intelligent routing system in the router/ folder, including load balancing strategies, cost-based routing, automatic fallbacks, and retry logic",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "Error Handling",
+      "purpose": "Documentation of error types, WarpError structure, provider-specific error handling, and best practices for handling API errors across different providers",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "Callbacks and Observability",
+      "purpose": "Documentation of the callback system for logging, metrics, and observability. Explains how to implement custom callbacks and use built-in logging features",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "Cost Tracking",
+      "purpose": "Documentation of cost tracking features, model pricing data, calculating request costs, and monitoring spend across providers",
+      "parent": "Architecture Overview"
+    },
+    {
+      "title": "Examples and Use Cases",
+      "purpose": "Reference to the examples/ folder showing real-world usage patterns for all features including basic completion, streaming, embeddings, images, audio, moderation, reranking, and advanced routing",
+      "parent": null
+    }
+  ]
+}

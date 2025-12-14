@@ -3,6 +3,7 @@
 [![CI](https://github.com/blue-context/warp/workflows/CI/badge.svg)](https://github.com/blue-context/warp/actions)
 [![Go Report Card](https://goreportcard.com/badge/github.com/blue-context/warp)](https://goreportcard.com/report/github.com/blue-context/warp)
 [![GoDoc](https://godoc.org/github.com/blue-context/warp?status.svg)](https://godoc.org/github.com/blue-context/warp)
+[![DeepWiki](https://img.shields.io/badge/DeepWiki-Docs-blue)](https://deepwiki.com/blue-context/warp)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A unified Go SDK for calling multiple LLM providers (OpenAI, Anthropic, Azure, AWS Bedrock, Google Vertex AI, and more) with zero external dependencies.
