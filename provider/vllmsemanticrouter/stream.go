@@ -1,0 +1,196 @@
+package vllmsemanticrouter
+
+import (
+	"bufio"
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+
+	"github.com/blue-context/warp"
+)
+
+// CompletionStream sends a streaming chat completion request to vLLM Semantic Router.
+//
+// This method returns a Stream that delivers response chunks incrementally
+// as they become available from the server.
+//
+// The caller must close the returned stream to release resources.
+//
+// The "auto" model parameter works with streaming to enable intelligent
+// semantic routing while receiving incremental responses.
+//
+// Example:
+//
+//	stream, err := provider.CompletionStream(ctx, &warp.CompletionRequest{
+//	    Model: "auto", // Semantic routing with streaming
+//	    Messages: []warp.Message{
+//	        {Role: "user", Content: "Tell me a story"},
+//	    },
+//	})
+//	if err != nil {
+//	    return err
+//	}
+//	defer stream.Close()
+//
+//	for {
+//	    chunk, err := stream.Recv()
+//	    if err == io.EOF {
+//	        break
+//	    }
+//	    if err != nil {
+//	        return err
+//	    }
+//	    fmt.Print(chunk.Choices[0].Delta.Content)
+//	}
+func (p *Provider) CompletionStream(ctx context.Context, req *warp.CompletionRequest) (warp.Stream, error) {
+	if ctx == nil {
+		return nil, fmt.Errorf("context cannot be nil")
+	}
+
+	if req == nil {
+		return nil, fmt.Errorf("request cannot be nil")
+	}
+
+	// Transform request to OpenAI-compatible format
+	routerReq := transformRequest(req)
+
+	// Enable streaming for this request
+	routerReq["stream"] = true
+
+	// Marshal to JSON
+	body, err := json.Marshal(routerReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	// Create HTTP request
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", p.baseURL+"/v1/chat/completions", bytes.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Set headers
+	httpReq.Header.Set("Content-Type", "application/json")
+	if p.apiKey != "" {
+		httpReq.Header.Set("Authorization", "Bearer "+p.apiKey)
+	}
+	httpReq.Header.Set("Accept", "text/event-stream")
+
+	// Send request
+	httpResp, err := p.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+
+	// Check status code
+	if httpResp.StatusCode != http.StatusOK {
+		defer httpResp.Body.Close()
+		body, _ := io.ReadAll(httpResp.Body)
+		return nil, warp.ParseProviderError("vllm-semantic-router", httpResp.StatusCode, body, nil)
+	}
+
+	// Create SSE stream
+	return newSSEStream(ctx, httpResp.Body), nil
+}
+
+// sseStream implements warp.Stream for Server-Sent Events.
+//
+// This type parses SSE formatted responses from vLLM Semantic Router's streaming API
+// and converts them into CompletionChunk objects.
+//
+// Thread Safety: sseStream is NOT safe for concurrent use.
+// Only one goroutine should call Recv() at a time.
+type sseStream struct {
+	reader *bufio.Reader
+	closer io.Closer
+	ctx    context.Context
+	err    error // Cached error for subsequent Recv calls
+}
+
+// newSSEStream creates a new SSE stream from an HTTP response body.
+//
+// The stream will parse Server-Sent Events and return them as
+// CompletionChunk objects.
+func newSSEStream(ctx context.Context, body io.ReadCloser) warp.Stream {
+	return &sseStream{
+		reader: bufio.NewReader(body),
+		closer: body,
+		ctx:    ctx,
+	}
+}
+
+// Recv receives the next chunk from the stream.
+//
+// Returns io.EOF when the stream is complete (after receiving [DONE] marker).
+// Returns other errors for failure conditions.
+//
+// After receiving io.EOF or any error, subsequent calls will return the same error.
+func (s *sseStream) Recv() (*warp.CompletionChunk, error) {
+	// Return cached error if we've already failed or completed
+	if s.err != nil {
+		return nil, s.err
+	}
+
+	for {
+		// Check context cancellation
+		select {
+		case <-s.ctx.Done():
+			s.err = s.ctx.Err()
+			return nil, s.err
+		default:
+		}
+
+		// Read line
+		line, err := s.reader.ReadBytes('\n')
+		if err != nil {
+			if err == io.EOF {
+				s.err = io.EOF
+				return nil, io.EOF
+			}
+			s.err = fmt.Errorf("failed to read line: %w", err)
+			return nil, s.err
+		}
+
+		// Trim whitespace
+		line = bytes.TrimSpace(line)
+
+		// Skip empty lines
+		if len(line) == 0 {
+			continue
+		}
+
+		// Parse SSE field - must have "data: " prefix
+		if !bytes.HasPrefix(line, []byte("data: ")) {
+			continue
+		}
+
+		// Extract data after "data: " prefix
+		data := bytes.TrimPrefix(line, []byte("data: "))
+
+		// Check for [DONE] marker
+		if bytes.Equal(data, []byte("[DONE]")) {
+			s.err = io.EOF
+			return nil, io.EOF
+		}
+
+		// Parse JSON chunk
+		var chunk warp.CompletionChunk
+		if err := json.Unmarshal(data, &chunk); err != nil {
+			s.err = fmt.Errorf("failed to parse chunk: %w", err)
+			return nil, s.err
+		}
+
+		return &chunk, nil
+	}
+}
+
+// Close closes the stream and releases resources.
+//
+// It is safe to call Close multiple times.
+// Close must be called even if Recv returns an error.
+func (s *sseStream) Close() error {
+	return s.closer.Close()
+}
