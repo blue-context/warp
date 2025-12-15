@@ -1,0 +1,43 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Warp - Unified Go SDK for LLM Providers",
+  "description": "A zero-dependency Go SDK that provides a unified interface for calling multiple LLM providers (OpenAI, Anthropic, Azure, AWS Bedrock, Google Vertex AI, and more) with features like streaming, cost tracking, load balancing, and automatic fallbacks.",
+  "folders": [
+    ".",
+    "provider",
+    "router",
+    "callback",
+    "examples",
+    "docs"
+  ],
+  "excludeFolders": [
+    ".git",
+    ".github",
+    ".claude",
+    "workbench",
+    "internal/testutil",
+    "**/vendor",
+    "**/*_test.go"
+  ],
+  "excludeFiles": [
+    "go.sum",
+    "LICENSE",
+    "CHANGELOG.md",
+    ".gitignore"
+  ],
+  "rules": [
+    "The Warp SDK uses a provider-based architecture where all providers implement the same 14-method Provider interface defined in provider/provider.go.",
+    "When implementing a new provider, always add compile-time interface checks using 'var _ provider.Provider = (*Provider)(nil)' and create compliance, stub validation, and capabilities tests.",
+    "For providers that don't support certain features, stub methods must return *warp.WarpError (not generic errors) with the format: '<operation> is not supported by <Provider>'.",
+    "Use the client.Completion() method for non-streaming requests and client.CompletionStream() for streaming. Always specify the model in the format 'provider/model-name' (e.g., 'openai/gpt-4').",
+    "The router package provides intelligent routing with load balancing, cost-based routing, and automatic fallbacks. Use router.NewRouter() to create a router with multiple provider deployments.",
+    "All providers support different subsets of features. Check the provider's Supports() method to see which capabilities are available (Completion, Streaming, Embedding, ImageGeneration, etc.).",
+    "For testing, the provider/testing.go file contains reusable test utilities: AssertProviderCompliance(), AssertStubMethodsReturnWarpError(), and AssertCapabilitiesAccuracy().",
+    "When handling errors, check for specific error types like warp.AuthenticationError, warp.RateLimitError, or warp.ServiceUnavailableError for better error handling.",
+    "Use callbacks for observability by implementing the callback.Callback interface and registering with client.WithCallback().",
+    "Cost tracking is built-in. Access cost information from the response.Usage field which includes PromptTokens, CompletionTokens, and TotalTokens.",
+    "All request contexts should include proper context.Context for cancellation and timeout handling. Never use context.Background() in production code.",
+    "When adding a new provider, follow the structure in provider/openai/ or provider/anthropic/ as reference implementations with complete feature support and proper stubbing patterns."
+  ],
+  "previousVersions": []
+}
